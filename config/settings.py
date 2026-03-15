@@ -10,7 +10,8 @@ SECRET_KEY = 'django-insecure-v12games-secret-key-change-in-production'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+#ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 # التطبيقات المثبتة
 INSTALLED_APPS = [
