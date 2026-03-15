@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}{% if active_genre %}{{ active_genre.name }}{% else %}All Games{% endif %} — V12Games{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <!-- TOP BAR -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex items-center gap-3">
+      <h1 class="text-2xl font-black text-white">
+        {% if page_title %}{{ page_title }}
+        {% elif active_genre %}{{ active_genre.name }}
+        {% else %}<span data-t="all_games">All Games</span>{% endif %}
+      </h1>
+      <span class="px-3 py-1 rounded-full bg-purple-600/20 text-purple-400 text-sm font-black border border-purple-600/30">
+        {{ total_count }}
+      </span>
+    </div>
+
+    <!-- Search -->
+    <form method="get" class="flex gap-2">
+      {% if active_genre_slug %}<input type="hidden" name="genre" value="{{ active_genre_slug }}" />{% endif %}
+      {% if active_year %}<input type="hidden" name="year" value="{{ active_year }}" />{% endif %}
+      {% if active_sort and active_sort != '-created_at' %}<input type="hidden" name="sort" value="{{ active_sort }}" />{% endif %}
+      <div class="relative">
+        <input type="text" name="q" value="{{ q }}"
+               class="bg-gray-800/80 border border-gray-700 text-white rounded-xl px-4 py-2.5 pl-10 w-64 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm placeholder-gray-500 transition-all"
+               placeholder="Search games..." />
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+      </div>
+      <button type="submit"
+              class="px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-bold transition-all hover:scale-[1.02]">
+        <i class="fas fa-search"></i>
+      </button>
+    </form>
+  </div>
+
+  <!-- FILTERS ROW -->
+  <div class="flex flex-wrap items-center gap-3 mb-5">
+
+    <!-- Genre pills -->
+    <div class="flex flex-wrap gap-2">
+      <a href="{% url 'game_list' %}{% if q %}?q={{ q }}{% endif %}"
+         class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border
+         {% if not active_genre_slug %}bg-purple-600 text-white border-purple-600{% else %}bg-gray-800/80 text-gray-300 border-gray-700 hover:border-purple-500/50 hover:text-white{% endif %}">
+        All
+      </a>
+      {% for genre in genres %}
+      <a href="?genre={{ genre.slug }}{% if q %}&q={{ q }}{% endif %}"
+         class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border
+         {% if active_genre_slug == genre.slug %}bg-purple-600 text-white border-purple-600{% else %}bg-gray-800/80 text-gray-300 border-gray-700 hover:border-purple-500/50 hover:text-white{% endif %}">
+        {% if genre.icon %}<i class="{{ genre.icon }} mr-1"></i>{% endif %}{{ genre.name }}
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Sort + Year -->
+    <div class="ml-auto flex items-center gap-2">
+      <form method="get">
+        {% if active_genre_slug %}<input type="hidden" name="genre" value="{{ active_genre_slug }}" />{% endif %}
+        {% if q %}<input type="hidden" name="q" value="{{ q }}" />{% endif %}
+        {% if active_year %}<input type="hidden" name="year" value="{{ active_year }}" />{% endif %}
+        <select name="sort" onchange="this.form.submit()"
+                class="bg-gray-800/80 border border-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 hover:border-purple-500/50 transition-all cursor-pointer">
+          <option value="-created_at" {% if active_sort == '-created_at' %}selected{% endif %}>Newest</option>
+          <option value="-downloads" {% if active_sort == '-downloads' %}selected{% endif %}>Most Downloaded</option>
+          <option value="-views" {% if active_sort == '-views' %}selected{% endif %}>Most Viewed</option>
+          <option value="title" {% if active_sort == 'title' %}selected{% endif %}>A–Z</option>
+        </select>
+      </form>
+
+      <form method="get">
+        {% if active_genre_slug %}<input type="hidden" name="genre" value="{{ active_genre_slug }}" />{% endif %}
+        {% if q %}<input type="hidden" name="q" value="{{ q }}" />{% endif %}
+        {% if active_sort %}<input type="hidden" name="sort" value="{{ active_sort }}" />{% endif %}
+        <select name="year" onchange="this.form.submit()"
+                class="bg-gray-800/80 border border-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 hover:border-purple-500/50 transition-all cursor-pointer">
+          <option value="">All Years</option>
+          {% for year in years %}
+          <option value="{{ year }}" {% if active_year == year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+  </div>
+
+  <!-- ACTIVE FILTERS -->
+  {% if q or active_genre_slug or active_year %}
+  <div class="flex flex-wrap gap-2 mb-5">
+    <span class="text-gray-500 text-xs self-center">Active filters:</span>
+    {% if q %}
+    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-600/20 border border-purple-600/40 text-purple-300 text-xs font-medium">
+      <i class="fas fa-search text-xs"></i> "{{ q }}"
+      <a href="?{% if active_genre_slug %}genre={{ active_genre_slug }}&{% endif %}{% if active_year %}year={{ active_year }}{% endif %}"
+         class="hover:text-white ml-1 text-purple-400 font-black">×</a>
+    </span>
+    {% endif %}
+    {% if active_genre %}
+    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-600/20 border border-purple-600/40 text-purple-300 text-xs font-medium">
+      <i class="fas fa-tag text-xs"></i> {{ active_genre.name }}
+      <a href="?{% if q %}q={{ q }}&{% endif %}{% if active_year %}year={{ active_year }}{% endif %}"
+         class="hover:text-white ml-1 text-purple-400 font-black">×</a>
+    </span>
+    {% endif %}
+    {% if active_year %}
+    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-600/20 border border-purple-600/40 text-purple-300 text-xs font-medium">
+      <i class="fas fa-calendar text-xs"></i> {{ active_year }}
+      <a href="?{% if q %}q={{ q }}&{% endif %}{% if active_genre_slug %}genre={{ active_genre_slug }}{% endif %}"
+         class="hover:text-white ml-1 text-purple-400 font-black">×</a>
+    </span>
+    {% endif %}
+    <a href="{% url 'game_list' %}"
+       class="text-xs text-gray-500 hover:text-red-400 transition-colors self-center flex items-center gap-1">
+      <i class="fas fa-times text-xs"></i> Clear all
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- GAMES GRID -->
+  {% if games %}
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+    {% for game in games %}
+    <a href="{{ game.get_absolute_url }}"
+       class="game-card rounded-xl overflow-hidden bg-gray-800/80 border border-gray-700/30 hover:ring-2 hover:ring-purple-500 hover:border-transparent hover:scale-[1.03] transition-all duration-200 group cursor-pointer">
+      <div class="relative aspect-[3/4]">
+        {% if game.poster %}
+        <img src="{{ game.poster.url }}" class="w-full h-full object-cover" alt="{{ game.title }}" loading="lazy" />
+        {% else %}
+        <div class="w-full h-full bg-gray-700 flex items-center justify-center">
+          <i class="fas fa-gamepad text-3xl text-gray-500"></i>
+        </div>
+        {% endif %}
+
+        <!-- Version badge -->
+        <span class="absolute top-2 left-2 px-1.5 py-0.5 bg-black/70 text-xs rounded-md text-gray-300 backdrop-blur-sm font-medium">
+          v{{ game.version }}
+        </span>
+
+        <!-- Trending badge -->
+        {% if game.is_trending %}
+        <span class="absolute top-2 right-2 text-sm">🔥</span>
+        {% endif %}
+
+        <!-- Hover overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-200 flex flex-col justify-end p-3">
+          <p class="text-white text-xs font-bold leading-tight mb-1.5 line-clamp-2">{{ game.title }}</p>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-300 text-xs">{{ game.file_size }}</span>
+            <span class="flex items-center gap-1 text-purple-400 text-xs">
+              <i class="fas fa-download text-xs"></i>{{ game.downloads|default:0 }}
+            </span>
+          </div>
+          {% with genre=game.genres.first %}
+          {% if genre %}
+          <span class="text-purple-300 text-xs mt-1">{{ genre.name }}</span>
+          {% endif %}
+          {% endwith %}
+        </div>
+      </div>
+
+      <!-- Card footer -->
+      <div class="p-2.5">
+        <p class="text-white font-bold text-xs truncate leading-tight">{{ game.title }}</p>
+        <div class="flex items-center justify-between mt-1">
+          <p class="text-gray-500 text-xs">{{ game.file_size }}</p>
+          <p class="text-gray-600 text-xs">{{ game.release_year }}</p>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- PAGINATION -->
+  {% if page_obj.has_other_pages %}
+  <div class="flex items-center justify-center gap-2 mt-10">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if active_genre_slug %}&genre={{ active_genre_slug }}{% endif %}{% if active_year %}&year={{ active_year }}{% endif %}{% if active_sort %}&sort={{ active_sort }}{% endif %}"
+       class="w-10 h-10 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 flex items-center justify-center transition-all border border-gray-700 hover:border-purple-500/50">
+      <i class="fas fa-chevron-right text-sm"></i>
+    </a>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+      <span class="w-10 h-10 rounded-xl bg-purple-600 text-white text-sm font-black flex items-center justify-center">{{ num }}</span>
+      {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+      <a href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if active_genre_slug %}&genre={{ active_genre_slug }}{% endif %}{% if active_year %}&year={{ active_year }}{% endif %}{% if active_sort %}&sort={{ active_sort }}{% endif %}"
+         class="w-10 h-10 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm flex items-center justify-center transition-all border border-gray-700 hover:border-purple-500/50">
+        {{ num }}
+      </a>
+      {% elif num == 1 or num == page_obj.paginator.num_pages %}
+      <a href="?page={{ num }}"
+         class="w-10 h-10 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm flex items-center justify-center transition-all border border-gray-700">
+        {{ num }}
+      </a>
+      {% elif num == page_obj.number|add:'-4' or num == page_obj.number|add:'4' %}
+      <span class="text-gray-600 px-1">…</span>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if active_genre_slug %}&genre={{ active_genre_slug }}{% endif %}{% if active_year %}&year={{ active_year }}{% endif %}{% if active_sort %}&sort={{ active_sort }}{% endif %}"
+       class="w-10 h-10 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 flex items-center justify-center transition-all border border-gray-700 hover:border-purple-500/50">
+      <i class="fas fa-chevron-left text-sm"></i>
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <!-- EMPTY STATE -->
+  <div class="flex flex-col items-center justify-center py-28 text-center">
+    <div class="w-24 h-24 rounded-2xl bg-gray-800/80 border border-gray-700 flex items-center justify-center mb-5">
+      <i class="fas fa-search text-3xl text-gray-600"></i>
+    </div>
+    <h3 class="text-xl font-black text-white mb-2" data-t="no_games">No Games Found</h3>
+    <p class="text-gray-500 text-sm mb-6 max-w-sm">Try adjusting your filters or searching with a different keyword</p>
+    <a href="{% url 'game_list' %}"
+       class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-bold transition-all hover:scale-[1.02]">
+      <i class="fas fa-times"></i> Clear Filters
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+{% block title %}V12Games — Free PC Games{% endblock %}
+
+{% block content %}
+
+<!-- ═══ HERO SLIDER ═══ -->
+<section class="relative h-[90vh] min-h-[600px] overflow-hidden bg-gray-950">
+
+  {% for game in featured %}
+  <div class="slide-item absolute inset-0 transition-opacity duration-700
+              {% if forloop.first %}opacity-100{% else %}opacity-0{% endif %}"
+       style="z-index:{% if forloop.first %}1{% else %}0{% endif %}">
+
+    {% if game.cover %}
+    <img src="{{ game.cover.url }}" class="absolute inset-0 w-full h-full object-cover" alt="{{ game.title }}" />
+    {% elif game.poster %}
+    <img src="{{ game.poster.url }}" class="absolute inset-0 w-full h-full object-cover" alt="{{ game.title }}" />
+    {% endif %}
+
+    <div class="absolute inset-0" style="background: linear-gradient(to left, rgba(3,7,18,0.1) 0%, rgba(3,7,18,0.75) 50%, rgba(3,7,18,0.97) 100%)"></div>
+    <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(3,7,18,1) 0%, transparent 40%)"></div>
+
+    <div class="absolute inset-0 flex items-center">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8 w-full">
+        <div class="max-w-xl">
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="flex items-center gap-1.5 px-3 py-1 bg-green-500/20 border border-green-500/40 text-green-400 rounded-lg text-xs font-bold">
+              <i class="fas fa-desktop text-xs"></i> PC
+            </span>
+            <span class="flex items-center gap-1.5 px-3 py-1 bg-white/10 border border-white/20 text-gray-300 rounded-lg text-xs font-bold">v{{ game.version }}</span>
+            <span class="flex items-center gap-1.5 px-3 py-1 bg-white/10 border border-white/20 text-gray-300 rounded-lg text-xs font-bold">{{ game.release_year }}</span>
+            {% for genre in game.genres.all|slice:":2" %}
+            <a href="{% url 'genre_games' genre.slug %}" class="px-3 py-1 rounded-lg text-xs font-bold bg-purple-600/30 border border-purple-500/40 text-purple-300 hover:bg-purple-600/50 transition-all">{{ genre.name }}</a>
+            {% endfor %}
+          </div>
+          <h1 class="text-5xl lg:text-6xl font-black text-white mb-4 leading-none" style="text-shadow: 0 2px 20px rgba(0,0,0,0.8)">{{ game.title }}</h1>
+          <div class="flex items-center gap-2 mb-4 text-sm text-gray-400">
+            <i class="fas fa-hdd text-purple-400"></i>
+            <span>{{ game.file_size }}</span>
+            <span class="text-gray-600">•</span>
+            <i class="fas fa-download text-purple-400"></i>
+            <span>{{ game.downloads|default:0 }} <span data-t="downloads_count">downloads</span></span>
+          </div>
+          <p class="text-gray-300 text-sm lg:text-base leading-relaxed mb-7 line-clamp-2">{{ game.description|truncatechars:160 }}</p>
+          <div class="flex flex-wrap gap-3">
+            <a href="{{ game.get_absolute_url }}#download"
+               class="inline-flex items-center gap-2 px-7 py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl transition-all hover:scale-105 shadow-xl shadow-purple-900/50 text-sm">
+              <i class="fas fa-download"></i> <span data-t="download_now">Download Now</span>
+            </a>
+            <a href="{{ game.get_absolute_url }}"
+               class="inline-flex items-center gap-2 px-7 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl border border-white/20 backdrop-blur-sm transition-all hover:scale-105 text-sm">
+              <i class="fas fa-info-circle"></i> <span data-t="details">Details</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="absolute inset-0 flex items-center justify-center">
+    <div class="text-center">
+      <div class="text-8xl mb-4">🎮</div>
+      <h2 class="text-3xl font-black text-white mb-2">Welcome to V12Games</h2>
+      <p class="text-gray-400 mb-6">Add featured games from the admin panel</p>
+      <a href="/admin" class="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all">Admin Panel</a>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% if featured %}
+  <button onclick="changeSlide(-1)" class="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-purple-600/80 text-white backdrop-blur-sm flex items-center justify-center transition-all hover:scale-110 border border-white/10">
+    <i class="fas fa-chevron-right text-sm"></i>
+  </button>
+  <button onclick="changeSlide(1)" class="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-purple-600/80 text-white backdrop-blur-sm flex items-center justify-center transition-all hover:scale-110 border border-white/10">
+    <i class="fas fa-chevron-left text-sm"></i>
+  </button>
+  <div class="absolute bottom-0 left-0 right-0 z-20">
+    <div class="h-0.5 bg-white/10">
+      <div id="progress-bar" class="h-full bg-purple-500 transition-none" style="width:0%"></div>
+    </div>
+    <div class="flex justify-center gap-2 py-4 bg-gradient-to-t from-gray-950/50 to-transparent">
+      {% for game in featured %}
+      <button onclick="goToSlide({{ forloop.counter0 }})"
+              class="dot rounded-full transition-all duration-300 {% if forloop.first %}w-8 h-1.5 bg-purple-500{% else %}w-2 h-1.5 bg-white/30 hover:bg-white/60{% endif %}"></button>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+
+<!-- ═══ DISCORD BANNER ═══ -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex justify-center">
+    <a href="https://discord.gg/PbD836m8Uc" target="_blank" rel="noopener" id="discord-btn"
+       class="group relative overflow-hidden flex items-center gap-5 px-8 py-5 rounded-2xl border border-indigo-500/40 transition-all duration-300"
+       style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%); box-shadow: 0 0 12px rgba(99,102,241,0.4), 0 0 25px rgba(99,102,241,0.2);">
+      <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
+           style="background: radial-gradient(ellipse at 30% 50%, rgba(99,102,241,0.3) 0%, transparent 65%)"></div>
+      <div class="relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center flex-none"
+           style="background: rgba(99,102,241,0.25); box-shadow: 0 0 10px rgba(99,102,241,0.4)">
+        <i id="discord-icon" class="fab fa-discord text-3xl transition-all duration-300"
+           style="color: #a5b4fc; filter: drop-shadow(0 0 6px rgba(165,180,252,0.8))"></i>
+      </div>
+      <div class="relative z-10 flex-1 text-center">
+        <p class="text-indigo-300 text-xs font-semibold tracking-wider uppercase mb-0.5" data-t="join_discord">Join our community</p>
+        <p class="text-white font-black text-xl leading-tight">Join us on Discord</p>
+        <p class="text-indigo-400 text-xs mt-1">🎮 <strong data-t="discord_community">V12Games Community</strong></p>
+      </div>
+      <div class="relative z-10">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300" style="background: rgba(99,102,241,0.2)">
+          <i class="fas fa-arrow-left text-indigo-400 text-sm transition-all duration-300"></i>
+        </div>
+      </div>
+    </a>
+  </div>
+</section>
+
+
+<!-- ═══ TRENDING ═══ -->
+{% if trending %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="text-xl font-black text-white" data-t="trending_games">🔥 Trending Games</h2>
+    <a href="{% url 'game_list' %}?sort=-downloads" class="text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors flex items-center gap-1">
+      <span data-t="view_all">View All</span> <i class="fas fa-arrow-left text-xs"></i>
+    </a>
+  </div>
+  <div class="flex gap-4 overflow-x-auto scroll-x pb-4">
+    {% for game in trending %}
+    <a href="{{ game.get_absolute_url }}" class="game-card flex-none w-40 lg:w-44 rounded-xl overflow-hidden bg-gray-800/80 hover:ring-2 hover:ring-purple-500 hover:scale-105 transition-all duration-200 group border border-gray-700/30">
+      <div class="relative aspect-[3/4]">
+        {% if game.poster %}
+        <img src="{{ game.poster.url }}" class="w-full h-full object-cover" alt="{{ game.title }}" />
+        {% else %}
+        <div class="w-full h-full bg-gray-700 flex items-center justify-center"><i class="fas fa-gamepad text-4xl text-gray-500"></i></div>
+        {% endif %}
+        <span class="absolute top-2 right-2 px-1.5 py-0.5 bg-black/70 text-xs rounded text-gray-300 backdrop-blur-sm">v{{ game.version }}</span>
+        {% if game.is_trending %}<span class="absolute top-2 left-2 px-1.5 py-0.5 bg-orange-500/90 text-xs rounded text-white font-bold">🔥</span>{% endif %}
+        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2">
+          <p class="text-white text-xs font-bold leading-tight">{{ game.title }}</p>
+          <p class="text-gray-300 text-xs">{{ game.file_size }}</p>
+        </div>
+      </div>
+      <div class="p-2.5">
+        <p class="text-white font-bold text-xs truncate">{{ game.title }}</p>
+        <p class="text-gray-400 text-xs mt-0.5 flex items-center gap-1"><i class="fas fa-download text-purple-400 text-xs"></i>{{ game.downloads|default:0 }}</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══ LATEST ═══ -->
+{% if latest %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="text-xl font-black text-white" data-t="latest_games">🆕 Latest Games</h2>
+    <a href="{% url 'game_list' %}" class="text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors flex items-center gap-1">
+      <span data-t="view_all">View All</span> <i class="fas fa-arrow-left text-xs"></i>
+    </a>
+  </div>
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+    {% for game in latest %}
+    <a href="{{ game.get_absolute_url }}" class="game-card rounded-xl overflow-hidden bg-gray-800/80 hover:ring-2 hover:ring-purple-500 hover:scale-[1.03] transition-all group border border-gray-700/30">
+      <div class="relative aspect-[3/4]">
+        {% if game.poster %}
+        <img src="{{ game.poster.url }}" class="w-full h-full object-cover" alt="{{ game.title }}" />
+        {% else %}
+        <div class="w-full h-full bg-gray-700 flex items-center justify-center"><i class="fas fa-gamepad text-3xl text-gray-500"></i></div>
+        {% endif %}
+        <span class="absolute top-2 right-2 px-1.5 py-0.5 bg-black/70 text-xs rounded text-gray-300 backdrop-blur-sm">v{{ game.version }}</span>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2">
+          <p class="text-white text-xs font-bold">{{ game.title }}</p>
+        </div>
+      </div>
+      <div class="p-2">
+        <p class="text-white font-semibold text-xs truncate">{{ game.title }}</p>
+        <p class="text-gray-500 text-xs mt-0.5">{{ game.file_size }}</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══ UPCOMING ═══ -->
+{% if upcoming %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <h2 class="text-xl font-black text-white mb-5" data-t="coming_soon_title">⏳ Coming Soon</h2>
+  <div class="flex gap-4 overflow-x-auto scroll-x pb-4">
+    {% for game in upcoming %}
+    <a href="{{ game.get_absolute_url }}" class="flex-none w-56 rounded-xl overflow-hidden bg-gray-800/80 hover:ring-2 hover:ring-yellow-500 hover:scale-105 transition-all group border border-gray-700/30">
+      <div class="relative aspect-[3/4]">
+        {% if game.poster %}
+        <img src="{{ game.poster.url }}" class="w-full h-full object-cover opacity-70" alt="{{ game.title }}" />
+        {% else %}
+        <div class="w-full h-full bg-gray-700 flex items-center justify-center"><i class="fas fa-clock text-3xl text-yellow-500"></i></div>
+        {% endif %}
+        <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent flex flex-col justify-end p-3">
+          <span class="inline-block mb-2 px-2 py-0.5 bg-yellow-500/90 text-black text-xs font-black rounded" data-t="coming_soon_badge">Coming Soon</span>
+          <p class="text-white font-bold text-sm">{{ game.title }}</p>
+          <p class="text-gray-300 text-xs">{{ game.release_year }}</p>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══ GENRES ═══ -->
+{% if genres %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <h2 class="text-xl font-black text-white mb-5" data-t="browse_genre">🎮 Browse by Genre</h2>
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+    {% for genre in genres %}
+    <a href="{% url 'genre_games' genre.slug %}" class="group flex flex-col items-center gap-2 p-4 rounded-xl bg-gray-800/60 hover:bg-purple-900/40 hover:ring-2 hover:ring-purple-500 transition-all border border-gray-700/30">
+      <div class="w-12 h-12 rounded-full bg-purple-600/20 group-hover:bg-purple-600/40 flex items-center justify-center transition-colors">
+        <i class="{% if genre.icon %}{{ genre.icon }}{% else %}fas fa-gamepad{% endif %} text-purple-400 text-xl"></i>
+      </div>
+      <span class="text-gray-300 group-hover:text-white text-xs font-semibold text-center transition-colors">{{ genre.name }}</span>
+      <span class="text-gray-500 text-xs">{{ genre.games.count }} <span data-t="games_count">games</span></span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══ COLLECTIONS ═══ -->
+{% if collections %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="text-xl font-black text-white" data-t="collections_title">📦 Epic Collections</h2>
+    <a href="{% url 'collections' %}" class="text-purple-400 hover:text-purple-300 text-sm font-medium flex items-center gap-1">
+      <span data-t="view_all">View All</span> <i class="fas fa-arrow-left text-xs"></i>
+    </a>
+  </div>
+  <div class="flex gap-5 overflow-x-auto scroll-x pb-4">
+    {% for col in collections %}
+    <a href="{% url 'collection_detail' col.slug %}" class="flex-none w-64 rounded-xl overflow-hidden bg-gray-800/80 hover:ring-2 hover:ring-purple-500 hover:scale-[1.02] transition-all group border border-gray-700/30">
+      {% if col.cover %}
+      <img src="{{ col.cover.url }}" class="w-full h-40 object-cover" alt="{{ col.name }}" />
+      {% else %}
+      <div class="thumb-grid h-40">
+        {% for game in col.games.all|slice:":4" %}
+          {% if game.poster %}<img src="{{ game.poster.url }}" alt="{{ game.title }}" />
+          {% else %}<div class="bg-gray-700 flex items-center justify-center"><i class="fas fa-gamepad text-gray-500"></i></div>{% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="p-4">
+        <h3 class="text-white font-bold text-sm group-hover:text-purple-400 transition-colors">{{ col.name }}</h3>
+        <p class="text-gray-400 text-xs mt-1">{{ col.games.count }} <span data-t="games_count">games</span></p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══ TOP GAME ═══ -->
+{% if top_game %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16">
+  <h2 class="text-xl font-black text-white mb-5" data-t="top_downloaded">🏅 Most Downloaded</h2>
+  <div class="rounded-2xl overflow-hidden bg-gray-800/80 border border-gray-700/30">
+    <div class="flex flex-col md:flex-row">
+      <div class="md:w-48 flex-none">
+        {% if top_game.poster %}
+        <img src="{{ top_game.poster.url }}" class="w-full h-64 md:h-full object-cover" alt="{{ top_game.title }}" />
+        {% endif %}
+      </div>
+      <div class="p-6 flex flex-col justify-center">
+        <div class="flex flex-wrap gap-2 mb-3">
+          {% for genre in top_game.genres.all %}
+          <span class="px-2 py-0.5 rounded-full text-xs bg-purple-600/30 text-purple-300">{{ genre.name }}</span>
+          {% endfor %}
+        </div>
+        <h3 class="text-2xl font-black text-white mb-2">{{ top_game.title }}</h3>
+        <div class="flex flex-wrap gap-4 text-sm text-gray-400 mb-3">
+          <span><i class="fas fa-download text-purple-400 mr-1"></i>{{ top_game.downloads|default:0 }} <span data-t="downloads_count">downloads</span></span>
+          <span><i class="fas fa-eye text-blue-400 mr-1"></i>{{ top_game.views|default:0 }} <span data-t="views_count">views</span></span>
+          <span><i class="fas fa-hdd text-green-400 mr-1"></i>{{ top_game.file_size }}</span>
+        </div>
+        <p class="text-gray-300 text-sm mb-4 leading-relaxed">{{ top_game.description|truncatechars:200 }}</p>
+        <div class="flex gap-3">
+          <a href="{{ top_game.get_absolute_url }}#download" class="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-sm transition-all">
+            <i class="fas fa-download"></i> <span data-t="download">Download</span>
+          </a>
+          <a href="{{ top_game.get_absolute_url }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl text-sm transition-all">
+            <i class="fas fa-info-circle"></i> <span data-t="details">Details</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+const slides = document.querySelectorAll('.slide-item');
+const dots   = document.querySelectorAll('.dot');
+const bar    = document.getElementById('progress-bar');
+const DURATION = 4000;
+let current = 0, autoTimer;
+
+function showSlide(idx) {
+  slides.forEach((s, i) => { s.style.opacity = i===idx?'1':'0'; s.style.zIndex = i===idx?'1':'0'; });
+  dots.forEach((d, i) => {
+    if (i===idx) { d.classList.remove('w-2','bg-white/30','hover:bg-white/60'); d.classList.add('w-8','bg-purple-500'); }
+    else { d.classList.remove('w-8','bg-purple-500'); d.classList.add('w-2','bg-white/30','hover:bg-white/60'); }
+  });
+  current = idx;
+  if (bar) { bar.style.transition='none'; bar.style.width='0%'; requestAnimationFrame(()=>requestAnimationFrame(()=>{ bar.style.transition=`width ${DURATION}ms linear`; bar.style.width='100%'; })); }
+}
+function changeSlide(dir) { clearInterval(autoTimer); showSlide((current+dir+slides.length)%slides.length); startAuto(); }
+function goToSlide(idx) { clearInterval(autoTimer); showSlide(idx); startAuto(); }
+function startAuto() { autoTimer = setInterval(()=>showSlide((current+1)%slides.length), DURATION); }
+if (slides.length > 0) { showSlide(0); startAuto(); }
+</script>
+
+<style>
+@keyframes discordPulse {
+  0%,100%{box-shadow:0 0 10px rgba(99,102,241,.5),0 0 25px rgba(99,102,241,.3),0 0 50px rgba(99,102,241,.1);}
+  50%{box-shadow:0 0 20px rgba(99,102,241,.7),0 0 40px rgba(99,102,241,.4),0 0 80px rgba(99,102,241,.2);}
+}
+@keyframes iconFloat { 0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-4px) scale(1.1);} }
+#discord-btn{animation:discordPulse 2.5s ease-in-out infinite;}
+#discord-btn:hover{animation:none!important;transform:scale(1.04)!important;box-shadow:0 0 20px rgba(99,102,241,.8),0 0 50px rgba(99,102,241,.5),0 0 100px rgba(99,102,241,.2)!important;border-color:rgba(99,102,241,.9)!important;}
+#discord-btn:hover #discord-icon{color:#fff!important;animation:iconFloat 1s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(165,180,252,1)) drop-shadow(0 0 20px rgba(99,102,241,.9))!important;}
+</style>
+{% endblock %}

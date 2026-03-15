@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}V12Games — العاب PC مجانية{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { gray: { 950: '#030712' } } } }
+    }
+  </script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col">
+
+  <!-- NAVBAR -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center h-16 gap-3">
+
+        <!-- Logo -->
+        <a href="{% url 'home' %}" class="flex items-center gap-2 text-xl font-black flex-none" style="order:1">
+          <span class="text-2xl">🎮</span>
+          <span class="gradient-text">V12Games</span>
+        </a>
+
+        <!-- Desktop Links -->
+        <div class="hidden md:flex items-center gap-1 flex-1 justify-center" style="order:2">
+          <a href="{% url 'game_list' %}" class="px-3 py-2 rounded-lg text-gray-300 hover:text-purple-400 hover:bg-gray-800 transition-all text-sm font-medium whitespace-nowrap">
+            <i class="fas fa-gamepad mr-1"></i><span data-t="all_games">All Games</span>
+          </a>
+          <a href="{% url 'leaderboard' %}" class="px-3 py-2 rounded-lg text-gray-300 hover:text-purple-400 hover:bg-gray-800 transition-all text-sm font-medium whitespace-nowrap">
+            <i class="fas fa-trophy mr-1"></i><span data-t="leaderboard">Leaderboard</span>
+          </a>
+          <a href="{% url 'collections' %}" class="px-3 py-2 rounded-lg text-gray-300 hover:text-purple-400 hover:bg-gray-800 transition-all text-sm font-medium whitespace-nowrap">
+            <i class="fas fa-layer-group mr-1"></i><span data-t="collections">Collections</span>
+          </a>
+          <a href="{% url 'blog:list' %}" class="px-3 py-2 rounded-lg text-gray-300 hover:text-purple-400 hover:bg-gray-800 transition-all text-sm font-medium whitespace-nowrap">
+            <i class="fas fa-newspaper mr-1"></i><span data-t="blog">Blog</span>
+          </a>
+          <a href="{% url 'random_game' %}" class="px-3 py-2 rounded-lg text-gray-300 hover:text-yellow-400 hover:bg-gray-800 transition-all text-sm font-medium whitespace-nowrap">
+            <i class="fas fa-shuffle mr-1"></i><span data-t="random">Random</span>
+          </a>
+
+          <a href="{% url 'game_list' %}?sort=-created_at&online=true"
+             class="px-3 py-2 rounded-lg text-gray-300 hover:text-green-400 hover:bg-gray-800 transition-all text-sm font-medium whitespace-nowrap">
+           <span class="inline-flex items-center gap-1.5">
+             <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+           Online
+           </span>
+          </a>
+
+
+          <a href="{% url 'request_game' %}"
+              class="px-3 py-2 rounded-lg text-gray-300 hover:text-yellow-400 hover:bg-gray-800 transition-all text-sm font-medium whitespace-nowrap">
+           <i class="fas fa-plus mr-1"></i>Request
+          </a>
+
+        </div>
+
+        <!-- Right: Search + Lang + Auth -->
+        <div class="hidden md:flex items-center gap-2 flex-none" style="order:3">
+
+          <!-- Search -->
+          <button onclick="toggleSearch()" title="Search (Ctrl+K)"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-all border border-gray-700 hover:border-purple-500/50 text-sm">
+            <i class="fas fa-search text-sm"></i>
+            <kbd class="hidden lg:inline text-xs bg-gray-700/80 px-1.5 py-0.5 rounded text-gray-500 border border-gray-600/50 font-mono">⌘K</kbd>
+          </button>
+
+          <!-- Language -->
+          <button onclick="toggleLang()"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-xs font-bold transition-all border border-gray-700 hover:border-purple-500/50 flex-none">
+            <span id="lang-flag">🇸🇦</span>
+            <span id="lang-label">AR</span>
+          </button>
+
+          <!-- Auth -->
+          {% if user.is_authenticated %}
+            <a href="{% url 'profile' username=user.username %}" class="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors flex-none">
+              {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-purple-500" alt="{{ user.username }}" />
+              {% else %}
+                <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold flex-none">{{ user.username|first|upper }}</div>
+              {% endif %}
+              <span class="whitespace-nowrap">{{ user.username }}</span>
+            </a>
+            <form method="post" action="{% url 'account_logout' %}" class="inline flex-none">
+              {% csrf_token %}
+              <button type="submit" class="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-400 hover:text-red-400 transition-colors whitespace-nowrap">
+                <i class="fas fa-sign-out-alt"></i>
+                <span data-t="logout">Logout</span>
+              </button>
+            </form>
+          {% else %}
+            <a href="{% url 'account_login' %}" class="px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors font-medium whitespace-nowrap">
+              <span data-t="login">Login</span>
+            </a>
+            <a href="{% url 'account_signup' %}" class="px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors whitespace-nowrap">
+              <span data-t="register">Sign Up</span>
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- Mobile Hamburger -->
+        <button class="md:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 flex-none ml-auto" onclick="toggleMobileMenu()">
+          <i class="fas fa-bars text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="md:hidden max-h-0 opacity-0 bg-gray-900 border-t border-gray-800"
+         style="transition: max-height 0.3s ease, opacity 0.3s ease; overflow: hidden;">
+      <div class="px-4 py-3 space-y-1">
+        <button onclick="toggleMobileMenu(); setTimeout(toggleSearch, 150);"
+                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-all">
+          <i class="fas fa-search text-purple-400"></i>
+          <span>Search Games...</span>
+          <kbd class="ml-auto text-xs bg-gray-700 px-2 py-0.5 rounded text-gray-500 font-mono">Ctrl+K</kbd>
+        </button>
+        <a href="{% url 'game_list' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:text-purple-400 hover:bg-gray-800 text-sm">
+          <i class="fas fa-gamepad w-4"></i><span data-t="all_games">All Games</span>
+        </a>
+        <a href="{% url 'leaderboard' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:text-purple-400 hover:bg-gray-800 text-sm">
+          <i class="fas fa-trophy w-4"></i><span data-t="leaderboard">Leaderboard</span>
+        </a>
+        <a href="{% url 'collections' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:text-purple-400 hover:bg-gray-800 text-sm">
+          <i class="fas fa-layer-group w-4"></i><span data-t="collections">Collections</span>
+        </a>
+        <a href="{% url 'blog:list' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:text-purple-400 hover:bg-gray-800 text-sm">
+          <i class="fas fa-newspaper w-4"></i><span data-t="blog">Blog</span>
+        </a>
+        <a href="{% url 'random_game' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:text-yellow-400 hover:bg-gray-800 text-sm">
+          <i class="fas fa-shuffle w-4"></i><span data-t="random">Random</span>
+        </a>
+        <button onclick="toggleLang()" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-all border border-gray-700">
+          <span id="lang-flag-mobile">🇸🇦</span>
+          <span id="lang-label-mobile">AR</span>
+        </button>
+        <div class="pt-2 border-t border-gray-800 space-y-1">
+          {% if user.is_authenticated %}
+            <a href="{% url 'profile' username=user.username %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 text-sm">
+              <i class="fas fa-user w-4"></i>{{ user.username }}
+            </a>
+            <form method="post" action="{% url 'account_logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-red-400 hover:bg-gray-800 text-sm">
+                <i class="fas fa-sign-out-alt w-4"></i><span data-t="logout">Logout</span>
+              </button>
+            </form>
+          {% else %}
+            <a href="{% url 'account_login' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 text-sm">
+              <i class="fas fa-sign-in-alt w-4"></i><span data-t="login">Login</span>
+            </a>
+            <a href="{% url 'account_signup' %}" class="block px-3 py-2 mt-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold text-center">
+              <span data-t="register">Sign Up</span>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- SEARCH MODAL -->
+  <div id="search-modal" class="fixed inset-0 z-[100] hidden" onclick="closeSearchOnBg(event)">
+    <div class="absolute inset-0 bg-black/75 backdrop-blur-sm"></div>
+    <div class="relative max-w-2xl mx-auto mt-16 px-4">
+      <div class="bg-gray-900 rounded-2xl border border-gray-700/80 shadow-2xl overflow-hidden"
+           style="box-shadow: 0 0 60px rgba(124,58,237,0.2)">
+
+        <!-- Input -->
+        <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-800">
+          <i class="fas fa-search text-purple-400 text-base flex-none"></i>
+          <input type="text" id="search-input" placeholder="Search games by title..."
+                 autocomplete="off" spellcheck="false"
+                 class="flex-1 bg-transparent text-white text-base placeholder-gray-500 focus:outline-none"
+                 oninput="performSearch(this.value)" onkeydown="handleSearchKey(event)" />
+          <div id="search-spinner" class="hidden flex-none">
+            <i class="fas fa-circle-notch fa-spin text-purple-400 text-sm"></i>
+          </div>
+          <button onclick="toggleSearch()" class="text-gray-500 hover:text-white transition-colors flex-none">
+            <kbd class="px-2 py-1 bg-gray-800 rounded text-xs border border-gray-700 font-mono">ESC</kbd>
+          </button>
+        </div>
+
+        <!-- Popular Searches -->
+        <div id="search-suggestions" class="px-5 py-4">
+          <p class="text-gray-500 text-xs font-black uppercase tracking-widest mb-3 flex items-center gap-2">
+            <i class="fas fa-fire text-orange-400"></i> Popular Searches
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="searchQuery('GTA')" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-purple-600/30 text-gray-300 hover:text-white text-xs font-medium transition-all border border-gray-700 hover:border-purple-500/50">GTA</button>
+            <button onclick="searchQuery('Witcher')" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-purple-600/30 text-gray-300 hover:text-white text-xs font-medium transition-all border border-gray-700 hover:border-purple-500/50">Witcher</button>
+            <button onclick="searchQuery('Call of Duty')" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-purple-600/30 text-gray-300 hover:text-white text-xs font-medium transition-all border border-gray-700 hover:border-purple-500/50">Call of Duty</button>
+            <button onclick="searchQuery('FIFA')" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-purple-600/30 text-gray-300 hover:text-white text-xs font-medium transition-all border border-gray-700 hover:border-purple-500/50">FIFA</button>
+            <button onclick="searchQuery('Skyrim')" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-purple-600/30 text-gray-300 hover:text-white text-xs font-medium transition-all border border-gray-700 hover:border-purple-500/50">Skyrim</button>
+            <button onclick="searchQuery('Resident Evil')" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-purple-600/30 text-gray-300 hover:text-white text-xs font-medium transition-all border border-gray-700 hover:border-purple-500/50">Resident Evil</button>
+            <button onclick="searchQuery('Red Dead')" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-purple-600/30 text-gray-300 hover:text-white text-xs font-medium transition-all border border-gray-700 hover:border-purple-500/50">Red Dead</button>
+            <button onclick="searchQuery('Minecraft')" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-purple-600/30 text-gray-300 hover:text-white text-xs font-medium transition-all border border-gray-700 hover:border-purple-500/50">Minecraft</button>
+          </div>
+        </div>
+
+        <!-- Live Results -->
+        <div id="search-results" class="hidden">
+          <div class="px-5 py-2.5 border-b border-gray-800/50 flex items-center gap-2">
+            <span class="text-gray-500 text-xs font-medium">Results</span>
+            <span id="results-count" class="px-2 py-0.5 rounded-full bg-purple-600/20 text-purple-400 text-xs font-black border border-purple-600/30">0</span>
+          </div>
+          <div id="results-list" class="max-h-[380px] overflow-y-auto divide-y divide-gray-800/40"></div>
+          <div class="px-4 py-3 border-t border-gray-800">
+            <a id="view-all-link" href="#"
+               class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-bold transition-all text-gray-400 hover:text-white hover:bg-gray-800 border border-transparent hover:border-gray-700">
+              <span id="view-all-text">View all results</span>
+              <i class="fas fa-arrow-left text-xs"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Empty -->
+        <div id="search-empty" class="hidden px-5 py-12 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-gray-800 flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-search text-2xl text-gray-600"></i>
+          </div>
+          <p class="text-white font-bold mb-1">No games found</p>
+          <p class="text-gray-500 text-sm">Try a different search term</p>
+        </div>
+
+      </div>
+      <p class="text-center text-gray-600 text-xs mt-3">
+        Press <kbd class="px-1.5 py-0.5 bg-gray-800 rounded border border-gray-700 font-mono text-gray-400 text-xs">Enter</kbd> to search all
+        &nbsp;·&nbsp;
+        <kbd class="px-1.5 py-0.5 bg-gray-800 rounded border border-gray-700 font-mono text-gray-400 text-xs">↑↓</kbd> navigate
+      </p>
+    </div>
+  </div>
+
+
+  <!-- MESSAGES -->
+  {% if messages %}
+  <div class="fixed top-20 right-4 z-50 space-y-2 max-w-sm">
+    {% for message in messages %}
+    <div class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium
+      {% if message.tags == 'success' %}bg-green-800/90 border border-green-600 text-green-100
+      {% elif message.tags == 'error' %}bg-red-800/90 border border-red-600 text-red-100
+      {% else %}bg-gray-800/90 border border-gray-600 text-gray-100{% endif %}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- MAIN -->
+  <main class="flex-1 mt-16">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-900 border-t border-gray-800 mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-10">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div>
+          <a href="{% url 'home' %}" class="flex items-center gap-2 text-xl font-black mb-3">
+            <span>🎮</span><span class="gradient-text">V12Games</span>
+          </a>
+          <p class="text-gray-400 text-sm" data-t="footer_tagline">Free Pre-installed PC Games</p>
+          <div class="flex gap-3 mt-4">
+            <a href="https://discord.gg/PbD836m8Uc" target="_blank"
+               class="w-9 h-9 rounded-lg bg-gray-800 hover:bg-indigo-700 flex items-center justify-center text-gray-400 hover:text-white transition-all">
+              <i class="fab fa-discord"></i>
+            </a>
+          </div>
+        </div>
+        <div>
+          <h4 class="text-sm font-bold text-gray-300 uppercase tracking-widest mb-4" data-t="browse">Browse</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="{% url 'game_list' %}" class="text-gray-400 hover:text-purple-400 transition-colors" data-t="all_games">All Games</a></li>
+            <li><a href="{% url 'leaderboard' %}" class="text-gray-400 hover:text-purple-400 transition-colors" data-t="leaderboard">Leaderboard</a></li>
+            <li><a href="{% url 'collections' %}" class="text-gray-400 hover:text-purple-400 transition-colors" data-t="collections">Collections</a></li>
+            <li><a href="{% url 'blog:list' %}" class="text-gray-400 hover:text-purple-400 transition-colors" data-t="blog">Blog</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-bold text-gray-300 uppercase tracking-widest mb-4" data-t="links">Links</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="text-gray-400 hover:text-purple-400 transition-colors" data-t="about_us">About Us</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-purple-400 transition-colors" data-t="privacy">Privacy Policy</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-purple-400 transition-colors" data-t="contact">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 pt-6 text-center text-gray-500 text-sm">
+        <p>&copy; {% now "Y" %} V12Games. <span data-t="rights">All rights reserved</span>.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+  <script>
+  // Translation
+  const TR={ar:{"all_games":"كل الألعاب","leaderboard":"المتصدرون","collections":"المجموعات","blog":"المدونة","random":"عشوائي","login":"دخول","register":"تسجيل","logout":"خروج","download_now":"تحميل الآن","details":"التفاصيل","downloads_count":"تحميل","views_count":"مشاهدة","trending_games":"🔥 الألعاب الرائجة","latest_games":"🆕 أحدث الألعاب","view_all":"عرض الكل","browse_genre":"🎮 تصفح حسب النوع","collections_title":"📦 المجموعات المميزة","top_downloaded":"🏅 الأكثر تحميلاً","coming_soon_title":"⏳ قريباً","coming_soon_badge":"قريباً","about_game":"عن اللعبة","screenshots":"لقطات الشاشة","trailer":"الإعلان التشويقي","reviews_title":"التقييمات","download_links":"روابط التحميل","related_games":"ألعاب مشابهة","game_info":"معلومات اللعبة","file_size":"الحجم","release_year":"سنة الإصدار","version":"الإصدار","downloads":"التحميلات","views":"المشاهدات","rating":"التقييم","browse":"تصفح","links":"روابط","about_us":"من نحن","privacy":"سياسة الخصوصية","contact":"تواصل معنا","rights":"جميع الحقوق محفوظة","footer_tagline":"العاب PC مجانية — حمّل والعب فوراً","no_games":"لا توجد ألعاب","read_more":"اقرأ المزيد","back_to_blog":"العودة للمدونة","games_count":"لعبة","join_discord":"انضم إلى مجتمعنا","discord_community":"V12Games Community","write_review":"أضف تقييمك","your_rating":"تقييمك","submit_review":"إرسال التقييم","login_to_review":"سجّل دخولك لتضيف تقييماً","already_reviewed":"لقد قيّمت هذه اللعبة مسبقاً","most_downloaded":"الأكثر تحميلاً","most_viewed":"الأكثر مشاهدة","download":"تحميل","leaderboard_title":"🏆 المتصدرون","blog_title":"📰 الأخبار والمقالات"},en:{"all_games":"All Games","leaderboard":"Leaderboard","collections":"Collections","blog":"Blog","random":"Random","login":"Login","register":"Sign Up","logout":"Logout","download_now":"Download Now","details":"Details","downloads_count":"downloads","views_count":"views","trending_games":"🔥 Trending Games","latest_games":"🆕 Latest Games","view_all":"View All","browse_genre":"🎮 Browse by Genre","collections_title":"📦 Epic Collections","top_downloaded":"🏅 Most Downloaded","coming_soon_title":"⏳ Coming Soon","coming_soon_badge":"Coming Soon","about_game":"About This Game","screenshots":"Screenshots","trailer":"Trailer","reviews_title":"Reviews","download_links":"Download Links","related_games":"Related Games","game_info":"Game Info","file_size":"File Size","release_year":"Release Year","version":"Version","downloads":"Downloads","views":"Views","rating":"Rating","browse":"Browse","links":"Links","about_us":"About Us","privacy":"Privacy Policy","contact":"Contact","rights":"All rights reserved","footer_tagline":"Free Pre-installed PC Games — Download & Play Instantly","no_games":"No Games Found","read_more":"Read More","back_to_blog":"Back to Blog","games_count":"games","join_discord":"Join our community","discord_community":"V12Games Community","write_review":"Write a Review","your_rating":"Your Rating","submit_review":"Submit Review","login_to_review":"Login to leave a review","already_reviewed":"You already reviewed this game","most_downloaded":"Most Downloaded","most_viewed":"Most Viewed","download":"Download","leaderboard_title":"🏆 Leaderboard","blog_title":"📰 News & Articles"}};
+
+  function getLang(){return localStorage.getItem("v12_lang")||"en";}
+  function applyLang(lang){
+    document.querySelectorAll("[data-t]").forEach(el=>{const k=el.getAttribute("data-t");if(TR[lang]?.[k])el.textContent=TR[lang][k];});
+    const isEn=lang==="en";
+    [["lang-flag",isEn?"🇸🇦":"🇺🇸"],["lang-label",isEn?"AR":"EN"],["lang-flag-mobile",isEn?"🇸🇦":"🇺🇸"],["lang-label-mobile",isEn?"AR":"EN"]].forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+  }
+  function toggleLang(){const n=getLang()==="en"?"ar":"en";localStorage.setItem("v12_lang",n);applyLang(n);}
+
+  let mobileOpen=false;
+  function toggleMobileMenu(){const m=document.getElementById("mobile-menu");mobileOpen=!mobileOpen;m.style.maxHeight=mobileOpen?m.scrollHeight+"px":"0";m.style.opacity=mobileOpen?"1":"0";}
+
+  document.addEventListener("DOMContentLoaded",()=>applyLang(getLang()));
+
+  // Live Search
+  let sTimeout,sOpen=false,sIdx=-1;
+
+  function toggleSearch(){
+    sOpen=!sOpen;
+    const m=document.getElementById("search-modal");
+    if(sOpen){m.classList.remove("hidden");document.body.style.overflow="hidden";setTimeout(()=>document.getElementById("search-input").focus(),80);}
+    else closeSearch();
+  }
+
+  function closeSearch(){
+    sOpen=false;
+    document.getElementById("search-modal").classList.add("hidden");
+    document.body.style.overflow="";
+    document.getElementById("search-input").value="";
+    resetSUI();sIdx=-1;
+  }
+
+  function closeSearchOnBg(e){if(e.target===document.getElementById("search-modal"))closeSearch();}
+
+  function resetSUI(){
+    document.getElementById("search-suggestions").classList.remove("hidden");
+    document.getElementById("search-results").classList.add("hidden");
+    document.getElementById("search-empty").classList.add("hidden");
+    document.getElementById("search-spinner").classList.add("hidden");
+  }
+
+  function searchQuery(q){document.getElementById("search-input").value=q;performSearch(q);}
+
+  function handleSearchKey(e){
+    if(e.key==="Escape"){closeSearch();return;}
+    if(e.key==="Enter"){
+      const items=document.querySelectorAll(".s-item");
+      if(sIdx>=0&&items[sIdx]){window.location.href=items[sIdx].getAttribute("href");return;}
+      const q=document.getElementById("search-input").value.trim();
+      if(q)window.location.href="/games/?q="+encodeURIComponent(q);
+      return;
+    }
+    if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+      e.preventDefault();
+      const items=document.querySelectorAll(".s-item");
+      if(!items.length)return;
+      if(sIdx>=0)items[sIdx].classList.remove("bg-gray-800/80");
+      sIdx=e.key==="ArrowDown"?Math.min(sIdx+1,items.length-1):Math.max(sIdx-1,0);
+      items[sIdx].classList.add("bg-gray-800/80");
+      items[sIdx].scrollIntoView({block:"nearest"});
+    }
+  }
+
+  async function performSearch(query){
+    const q=query.trim();
+    if(q.length<2){resetSUI();return;}
+    document.getElementById("search-spinner").classList.remove("hidden");
+    document.getElementById("search-suggestions").classList.add("hidden");
+    document.getElementById("search-results").classList.add("hidden");
+    document.getElementById("search-empty").classList.add("hidden");
+    clearTimeout(sTimeout);
+    sTimeout=setTimeout(async()=>{
+      try{
+        const res=await fetch("/api/search/?q="+encodeURIComponent(q));
+        const data=await res.json();
+        document.getElementById("search-spinner").classList.add("hidden");
+        if(data.results&&data.results.length>0)renderResults(data.results,data.count,q);
+        else document.getElementById("search-empty").classList.remove("hidden");
+      }catch(err){
+        document.getElementById("search-spinner").classList.add("hidden");
+        document.getElementById("search-empty").classList.remove("hidden");
+      }
+    },220);
+  }
+
+  function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+  function renderResults(results,count,q){
+    document.getElementById("results-count").textContent=count;
+    document.getElementById("results-list").innerHTML=results.map(g=>`
+      <a href="${g.url}" class="s-item flex items-center gap-4 px-5 py-3.5 hover:bg-gray-800/80 transition-all group cursor-pointer" onclick="closeSearch()">
+        <div class="flex-none w-10 h-14 rounded-lg overflow-hidden bg-gray-800 shadow-lg">
+          ${g.poster?`<img src="${g.poster}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="${esc(g.title)}" />`:`<div class="w-full h-full flex items-center justify-center"><i class="fas fa-gamepad text-gray-600 text-sm"></i></div>`}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-white font-bold text-sm truncate group-hover:text-purple-400 transition-colors">${esc(g.title)}</p>
+          <div class="flex items-center gap-2 mt-1 flex-wrap">
+            ${g.genres.map(x=>`<span class="text-xs text-purple-300 bg-purple-600/15 px-1.5 py-0.5 rounded border border-purple-600/20">${esc(x)}</span>`).join("")}
+            <span class="text-gray-600 text-xs">${g.year}</span>
+            <span class="text-gray-700 text-xs">·</span>
+            <span class="text-gray-500 text-xs">${esc(g.file_size)}</span>
+          </div>
+        </div>
+        <div class="flex-none flex items-center gap-3">
+          <div class="hidden sm:block text-right">
+            <p class="text-purple-400 text-xs font-bold">${g.downloads.toLocaleString()}</p>
+            <p class="text-gray-600 text-xs">downloads</p>
+          </div>
+          <i class="fas fa-arrow-left text-gray-600 group-hover:text-purple-400 group-hover:-translate-x-0.5 transition-all text-xs"></i>
+        </div>
+      </a>
+    `).join("");
+    document.getElementById("view-all-link").href="/games/?q="+encodeURIComponent(q);
+    document.getElementById("view-all-text").textContent=`View all results for "${q}"`;
+    document.getElementById("search-results").classList.remove("hidden");
+    sIdx=-1;
+  }
+
+  document.addEventListener("keydown",function(e){
+    if((e.ctrlKey||e.metaKey)&&e.key==="k"){e.preventDefault();toggleSearch();}
+    if(e.key==="Escape"&&sOpen)closeSearch();
+    if(e.key==="/"&&!sOpen&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)){e.preventDefault();toggleSearch();}
+  });
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

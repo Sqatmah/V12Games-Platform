@@ -1,0 +1,136 @@
+/* V12Games Custom Styles */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #111827; }
+::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+
+html { scroll-behavior: smooth; }
+
+.slide { animation: fadeIn 0.6s ease-in-out; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(1.02); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.scroll-x {
+  scrollbar-width: thin;
+  scrollbar-color: #7c3aed #1f2937;
+}
+
+.game-card:hover {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+}
+
+.star-rating input[type="radio"] { display: none; }
+.star-rating label {
+  font-size: 1.75rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.star-rating input[type="radio"]:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label { color: #f59e0b; }
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 0.5rem;
+  object-fit: contain;
+}
+
+.stat-bar {
+  background: linear-gradient(90deg, #7c3aed, #4f46e5);
+  height: 6px;
+  border-radius: 3px;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.thumb-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+  overflow: hidden;
+}
+.thumb-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#mobile-menu {
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════
+   Discord Button Neon Effect
+═══════════════════════════════════════ */
+
+/* نبضة دائمة خفيفة */
+@keyframes discordPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 8px  rgba(99, 102, 241, 0.35),
+      0 0 16px rgba(99, 102, 241, 0.15);
+  }
+  50% {
+    box-shadow:
+      0 0 18px rgba(99, 102, 241, 0.55),
+      0 0 35px rgba(99, 102, 241, 0.25);
+  }
+}
+
+/* أنيميشن أيقونة Discord */
+@keyframes discordIconFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-3px); }
+}
+
+.discord-btn {
+  animation: discordPulse 3s ease-in-out infinite;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* عند hover — يكبر + نيون قوي */
+.discord-btn:hover {
+  animation: none;
+  transform: scale(1.04);
+  box-shadow:
+    0 0 15px rgba(99, 102, 241, 0.6),
+    0 0 35px rgba(99, 102, 241, 0.35),
+    0 0 70px rgba(99, 102, 241, 0.15),
+    inset 0 0 25px rgba(99, 102, 241, 0.12);
+}
+
+/* أيقونة Discord عند hover */
+.discord-btn:hover .fab.fa-discord {
+  color: #ffffff !important;
+  animation: discordIconFloat 1s ease-in-out infinite;
+  filter:
+    drop-shadow(0 0 6px rgba(165, 180, 252, 1))
+    drop-shadow(0 0 14px rgba(99, 102, 241, 0.8));
+}
+
+/* حدود نيون عند hover */
+.discord-btn:hover {
+  border-color: rgba(99, 102, 241, 0.7) !important;
+}

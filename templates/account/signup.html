@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}إنشاء حساب — V12Games{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4 py-16 relative">
+
+  <!-- خلفية متحركة -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute bottom-1/4 left-1/4 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl animate-pulse" style="animation-delay:1.5s"></div>
+  </div>
+
+  <div class="w-full max-w-md relative z-10">
+
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <a href="{% url 'home' %}" class="inline-flex items-center gap-2 text-3xl font-black">
+        <span>🎮</span>
+        <span class="gradient-text">V12Games</span>
+      </a>
+      <p class="text-gray-400 text-sm mt-2">انضم لمجتمع اللاعبين</p>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-700/50 p-8 shadow-2xl">
+
+      <h2 class="text-xl font-black text-white mb-6 text-center">إنشاء حساب جديد 🎮</h2>
+
+      <form method="post" class="space-y-5">
+        {% csrf_token %}
+
+        <!-- Username -->
+        <div>
+          <label class="text-gray-300 text-sm font-medium block mb-2">
+            <i class="fas fa-user ml-1 text-purple-400"></i> اسم المستخدم
+          </label>
+          <input type="text" name="username" required maxlength="150"
+                 class="w-full bg-gray-800/80 border border-gray-600 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-500 transition-all"
+                 placeholder="اختر اسم مستخدم فريد" />
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="text-gray-300 text-sm font-medium block mb-2">
+            <i class="fas fa-lock ml-1 text-purple-400"></i> كلمة المرور
+          </label>
+          <div class="relative">
+            <input type="password" name="password1" id="password1" required
+                   class="w-full bg-gray-800/80 border border-gray-600 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-500 transition-all pr-12"
+                   placeholder="كلمة مرور قوية" />
+            <button type="button" onclick="togglePass('password1','eye1')"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+              <i id="eye1" class="fas fa-eye"></i>
+            </button>
+          </div>
+          <!-- Password strength -->
+          <div class="mt-2 h-1 bg-gray-700 rounded-full overflow-hidden">
+            <div id="strength-bar" class="h-full rounded-full transition-all duration-300 w-0"></div>
+          </div>
+          <p id="strength-text" class="text-xs mt-1 text-gray-500"></p>
+        </div>
+
+        <!-- Password Confirm -->
+        <div>
+          <label class="text-gray-300 text-sm font-medium block mb-2">
+            <i class="fas fa-lock ml-1 text-purple-400"></i> تأكيد كلمة المرور
+          </label>
+          <div class="relative">
+            <input type="password" name="password2" id="password2" required
+                   class="w-full bg-gray-800/80 border border-gray-600 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-500 transition-all pr-12"
+                   placeholder="أعد كتابة كلمة المرور" />
+            <button type="button" onclick="togglePass('password2','eye2')"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+              <i id="eye2" class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Errors -->
+        {% if form.errors %}
+        <div class="bg-red-900/30 border border-red-500/50 rounded-xl p-3 text-red-300 text-sm space-y-1">
+          {% for field in form %}
+            {% for error in field.errors %}
+            <div><i class="fas fa-exclamation-circle ml-1"></i>{{ error }}</div>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+          <div><i class="fas fa-exclamation-circle ml-1"></i>{{ error }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Terms -->
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input type="checkbox" required
+                 class="w-4 h-4 mt-0.5 rounded border-gray-600 bg-gray-800 text-purple-500 focus:ring-purple-500 flex-none" />
+          <span class="text-gray-400 text-xs leading-relaxed">
+            أوافق على
+            <a href="#" class="text-purple-400 hover:text-purple-300">شروط الاستخدام</a>
+            و
+            <a href="#" class="text-purple-400 hover:text-purple-300">سياسة الخصوصية</a>
+          </span>
+        </label>
+
+        <!-- Submit -->
+        <button type="submit"
+                class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-purple-900/40 text-sm">
+          <i class="fas fa-user-plus ml-2"></i>إنشاء الحساب
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="flex items-center gap-3 my-6">
+        <div class="flex-1 h-px bg-gray-700"></div>
+        <span class="text-gray-500 text-xs">لديك حساب؟</span>
+        <div class="flex-1 h-px bg-gray-700"></div>
+      </div>
+
+      <a href="{% url 'account_login' %}"
+         class="block w-full py-3 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-xl transition-all text-sm text-center border border-gray-600">
+        <i class="fas fa-sign-in-alt ml-2"></i>تسجيل الدخول
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function togglePass(id, iconId) {
+    const input = document.getElementById(id);
+    const icon = document.getElementById(iconId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+      input.type = 'password';
+      icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+  }
+
+  // قياس قوة كلمة المرور
+  document.getElementById('password1').addEventListener('input', function() {
+    const val = this.value;
+    const bar = document.getElementById('strength-bar');
+    const text = document.getElementById('strength-text');
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const levels = [
+      { w: '0%',   color: '',                  label: '' },
+      { w: '25%',  color: 'bg-red-500',        label: '😟 ضعيفة جداً' },
+      { w: '50%',  color: 'bg-yellow-500',     label: '😐 متوسطة' },
+      { w: '75%',  color: 'bg-blue-500',       label: '😊 جيدة' },
+      { w: '100%', color: 'bg-green-500',      label: '💪 قوية جداً' },
+    ];
+
+    bar.style.width = levels[score].w;
+    bar.className = `h-full rounded-full transition-all duration-300 ${levels[score].color}`;
+    text.textContent = levels[score].label;
+    text.className = `text-xs mt-1 ${score <= 1 ? 'text-red-400' : score === 2 ? 'text-yellow-400' : score === 3 ? 'text-blue-400' : 'text-green-400'}`;
+  });
+</script>
+{% endblock %}

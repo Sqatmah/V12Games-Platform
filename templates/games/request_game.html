@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% block title %}Request a Game — V12Games{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="relative py-20 bg-gray-900 border-b border-gray-800 overflow-hidden">
+  <div class="absolute inset-0"
+       style="background: radial-gradient(circle at 20% 50%, rgba(124,58,237,0.15), transparent 60%), radial-gradient(circle at 80% 50%, rgba(79,70,229,0.1), transparent 60%)"></div>
+  <div class="relative max-w-4xl mx-auto px-4 text-center">
+    <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-purple-600/20 border border-purple-500/30 mb-5 shadow-lg shadow-purple-900/20">
+      <i class="fas fa-gamepad text-purple-400 text-3xl"></i>
+    </div>
+    <h1 class="text-4xl font-black text-white mb-3">🎮 Request a Game</h1>
+    <p class="text-gray-400 text-lg">Can't find your game? Request it and we'll add it ASAP!</p>
+    <div class="flex items-center justify-center gap-6 mt-6 text-sm flex-wrap">
+      <div class="flex items-center gap-2 text-gray-400">
+        <i class="fas fa-clock text-yellow-400"></i>
+        <span>Usually added within 24h</span>
+      </div>
+      <div class="flex items-center gap-2 text-gray-400">
+        <i class="fas fa-check-circle text-green-400"></i>
+        <span>Free forever</span>
+      </div>
+      <div class="flex items-center gap-2 text-gray-400">
+        <i class="fab fa-discord text-indigo-400"></i>
+        <span>Discord support</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+  <!-- Messages -->
+  {% if message %}
+  <div class="mb-8 flex items-center gap-4 px-6 py-4 rounded-2xl bg-green-900/30 border border-green-600/40 text-green-300 font-medium text-sm shadow-lg">
+    <i class="fas fa-check-circle text-green-400 text-xl flex-none"></i>
+    {{ message }}
+  </div>
+  {% endif %}
+  {% if error %}
+  <div class="mb-8 flex items-center gap-4 px-6 py-4 rounded-2xl bg-red-900/30 border border-red-600/40 text-red-300 font-medium text-sm shadow-lg">
+    <i class="fas fa-exclamation-circle text-red-400 text-xl flex-none"></i>
+    {{ error }}
+  </div>
+  {% endif %}
+
+  <!-- Main Grid 50/50 -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+    <!-- LEFT: Form + Discord -->
+    <div class="flex flex-col gap-6">
+
+      <!-- Form Card -->
+      <div class="bg-gray-800/80 rounded-2xl border border-gray-700/50 overflow-hidden shadow-2xl">
+        <div class="bg-gradient-to-r from-purple-900/50 to-indigo-900/40 px-6 py-5 border-b border-gray-700/50">
+          <h2 class="text-lg font-black text-white flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-purple-600/30 flex items-center justify-center">
+              <i class="fas fa-plus text-purple-400 text-sm"></i>
+            </div>
+            New Game Request
+          </h2>
+          <p class="text-gray-400 text-xs mt-1">Fill in the details and we'll get it added</p>
+        </div>
+        <div class="p-6">
+          <form method="post" class="space-y-5">
+            {% csrf_token %}
+            <div>
+              <label class="text-gray-300 text-sm font-bold block mb-2">
+                <i class="fas fa-gamepad text-purple-400 mr-1"></i> Game Title <span class="text-red-400">*</span>
+              </label>
+              <input type="text" name="game_title" required
+                     class="w-full bg-gray-900/80 border border-gray-600 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm placeholder-gray-500 transition-all hover:border-gray-500"
+                     placeholder="e.g. GTA 6, Resident Evil 9, Elden Ring..." />
+            </div>
+            {% if not user.is_authenticated %}
+            <div>
+              <label class="text-gray-300 text-sm font-bold block mb-2">
+                <i class="fas fa-envelope text-purple-400 mr-1"></i> Email <span class="text-gray-500 font-normal">(optional)</span>
+              </label>
+              <input type="email" name="email"
+                     class="w-full bg-gray-900/80 border border-gray-600 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm placeholder-gray-500 transition-all hover:border-gray-500"
+                     placeholder="Get notified when added" />
+            </div>
+            {% endif %}
+            <div>
+              <label class="text-gray-300 text-sm font-bold block mb-2">
+                <i class="fas fa-sticky-note text-purple-400 mr-1"></i> Notes <span class="text-gray-500 font-normal">(optional)</span>
+              </label>
+              <textarea name="note" rows="3"
+                        class="w-full bg-gray-900/80 border border-gray-600 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm placeholder-gray-500 transition-all hover:border-gray-500 resize-none"
+                        placeholder="Specific version, platform, or any other details..."></textarea>
+            </div>
+            <button type="submit"
+                    class="w-full py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-purple-900/40 text-sm flex items-center justify-center gap-2">
+              <i class="fas fa-paper-plane"></i>
+              Submit Request
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Discord Support Card -->
+      <div class="bg-indigo-900/20 rounded-2xl border border-indigo-600/30 overflow-hidden shadow-xl">
+        <div class="p-6">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-600/30 flex items-center justify-center flex-none"
+                 style="box-shadow: 0 0 20px rgba(99,102,241,0.3)">
+              <i class="fab fa-discord text-indigo-300 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-white font-black text-base">Need Faster Help?</p>
+              <p class="text-indigo-300 text-xs mt-0.5">Our team is online & ready</p>
+            </div>
+            <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/15 border border-green-500/30 flex-none">
+              <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+              <span class="text-green-400 text-xs font-bold">Online</span>
+            </div>
+          </div>
+          <p class="text-gray-400 text-sm leading-relaxed mb-5">
+            Join our Discord server and our technical support team will help you
+            <span class="text-white font-bold">ASAP</span> — game requests, installation issues, anything! 🚀
+          </p>
+          <a href="https://discord.gg/PbD836m8Uc" target="_blank" rel="noopener"
+             class="flex items-center justify-center gap-3 w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-indigo-900/40 text-sm">
+            <i class="fab fa-discord text-lg"></i>
+            Join V12Games Discord
+          </a>
+          <p class="text-center text-gray-600 text-xs mt-3">Free to join · No registration required</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Admin Panel or How it Works -->
+    <div class="flex flex-col gap-6">
+
+      {% if is_admin %}
+      <!-- Pending Requests — أدمن فقط -->
+      <div class="bg-gray-800/80 rounded-2xl border border-gray-700/50 overflow-hidden shadow-2xl">
+        <div class="bg-gradient-to-r from-yellow-900/30 to-orange-900/20 px-6 py-5 border-b border-gray-700/50">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-black text-white flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+                <i class="fas fa-clock text-yellow-400 text-sm"></i>
+              </div>
+              Pending Requests
+              <span class="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-xs font-black border border-red-500/30 animate-pulse">
+                ADMIN
+              </span>
+            </h2>
+            <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-black border border-yellow-500/30">
+              {{ pending.count }} waiting
+            </span>
+          </div>
+        </div>
+        <div class="p-4">
+          {% if pending %}
+          <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
+            {% for req in pending %}
+            <div class="flex items-center gap-4 p-4 rounded-xl bg-gray-900/60 border border-gray-700/40 hover:border-purple-500/30 transition-all group">
+              <div class="flex-none w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center text-gray-500 text-xs font-black">
+                {{ forloop.counter }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-white font-bold text-sm truncate group-hover:text-purple-400 transition-colors">
+                  {{ req.game_title }}
+                </p>
+                {% if req.note %}
+                <p class="text-gray-500 text-xs mt-0.5 truncate">{{ req.note|truncatechars:50 }}</p>
+                {% endif %}
+                <div class="flex items-center gap-2 mt-0.5">
+                  <p class="text-gray-700 text-xs">{{ req.created_at|date:"M d, Y" }}</p>
+                  {% if req.user %}
+                  <span class="text-gray-600 text-xs">· {{ req.user.username }}</span>
+                  {% else %}
+                  <span class="text-gray-600 text-xs">· Guest</span>
+                  {% endif %}
+                </div>
+              </div>
+              <form method="post" class="flex-none">
+                {% csrf_token %}
+                <input type="hidden" name="game_title" value="{{ req.game_title }}" />
+                <button type="submit"
+                        class="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl bg-gray-800 hover:bg-purple-600/30 border border-gray-700 hover:border-purple-500/50 transition-all group/vote">
+                  <i class="fas fa-chevron-up text-gray-400 group-hover/vote:text-purple-400 text-xs transition-colors"></i>
+                  <span class="text-white font-black text-sm leading-none">{{ req.votes }}</span>
+                  <span class="text-gray-600 text-xs leading-none">votes</span>
+                </button>
+              </form>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-10">
+            <div class="w-16 h-16 rounded-2xl bg-gray-700/50 flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-inbox text-3xl text-gray-600"></i>
+            </div>
+            <p class="text-gray-400 font-medium">No pending requests</p>
+            <p class="text-gray-600 text-sm mt-1">Requests will appear here</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Recently Added — أدمن فقط -->
+      {% if added %}
+      <div class="bg-gray-800/80 rounded-2xl border border-gray-700/50 overflow-hidden shadow-xl">
+        <div class="bg-gradient-to-r from-green-900/30 to-emerald-900/20 px-6 py-5 border-b border-gray-700/50">
+          <h2 class="text-base font-black text-white flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-green-500/20 flex items-center justify-center">
+              <i class="fas fa-check text-green-400 text-xs"></i>
+            </div>
+            Recently Added ✅
+          </h2>
+        </div>
+        <div class="p-4 space-y-2">
+          {% for req in added %}
+          <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-green-900/10 border border-green-700/20">
+            <i class="fas fa-check-circle text-green-400 flex-none text-sm"></i>
+            <p class="text-gray-300 text-sm font-medium flex-1 truncate">{{ req.game_title }}</p>
+            <span class="text-gray-600 text-xs flex-none">{{ req.created_at|date:"M d" }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% endif %}
+      <!-- نهاية is_admin -->
+
+      <!-- How it Works — للجميع -->
+      <div class="bg-gray-800/50 rounded-2xl border border-gray-700/30 p-6">
+        <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-5">How it works</h3>
+        <div class="space-y-4">
+          <div class="flex items-center gap-4">
+            <div class="w-9 h-9 rounded-xl bg-purple-600/20 border border-purple-600/30 flex items-center justify-center flex-none text-purple-400 font-black text-sm">1</div>
+            <div>
+              <p class="text-white text-sm font-bold">Submit your request</p>
+              <p class="text-gray-500 text-xs">Tell us which game you want</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="w-9 h-9 rounded-xl bg-purple-600/20 border border-purple-600/30 flex items-center justify-center flex-none text-purple-400 font-black text-sm">2</div>
+            <div>
+              <p class="text-white text-sm font-bold">Community votes</p>
+              <p class="text-gray-500 text-xs">Popular requests get priority</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="w-9 h-9 rounded-xl bg-purple-600/20 border border-purple-600/30 flex items-center justify-center flex-none text-purple-400 font-black text-sm">3</div>
+            <div>
+              <p class="text-white text-sm font-bold">We add the game</p>
+              <p class="text-gray-500 text-xs">Usually within 24 hours</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="w-9 h-9 rounded-xl bg-green-600/20 border border-green-600/30 flex items-center justify-center flex-none text-green-400 font-black text-sm">✓</div>
+            <div>
+              <p class="text-white text-sm font-bold">Play for free!</p>
+              <p class="text-gray-500 text-xs">Download from V12Games instantly</p>
+            </div>
+          </div>
+        </div>
+        <!-- Discord shortcut -->
+        <div class="mt-5 pt-5 border-t border-gray-700/50">
+          <a href="https://discord.gg/PbD836m8Uc" target="_blank"
+             class="flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-900/20 border border-indigo-600/20 hover:border-indigo-500/40 transition-all group">
+            <i class="fab fa-discord text-indigo-400 text-lg group-hover:text-indigo-300 transition-colors"></i>
+            <div class="flex-1">
+              <p class="text-white text-xs font-bold">Faster? Join Discord</p>
+              <p class="text-gray-500 text-xs">Direct support from our team</p>
+            </div>
+            <i class="fas fa-arrow-left text-gray-600 group-hover:text-indigo-400 transition-colors text-xs"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
